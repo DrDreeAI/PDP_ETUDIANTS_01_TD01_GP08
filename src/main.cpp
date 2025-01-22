@@ -1,113 +1,114 @@
 #include <Arduino.h>
+
+// Define the pins that we will use
+#define LED 26
+
+// DHT Temperature & Humidity Sensor
+// Unified Sensor Library Example
+// Written by Tony DiCola for Adafruit Industries
+// Released under an MIT license.
+
+// REQUIRES the following Arduino libraries:
+// - DHT Sensor Library: https://github.com/adafruit/DHT-sensor-library
+// - Adafruit Unified Sensor Lib: https://github.com/adafruit/Adafruit_Sensor
+
 #include <Adafruit_Sensor.h>
 #include <DHT.h>
 #include <DHT_U.h>
 
-// Définir les broches utilisées
-#define CAPTEUR 33 // GPIO connecté au DHT
-#define LED 26     // GPIO pour la LED
+#define DHTPIN 33 // Digital pin connected to the DHT sensor
+// Feather HUZZAH ESP8266 note: use pins 3, 4, 5, 12, 13 or 14 --
+// Pin 15 can work but DHT must be disconnected during program upload.
 
-// Définir le type de capteur utilisé (DHT11 ou DHT22)
-#define DHTTYPE DHT22 // Remplacez par DHT11 si nécessaire
+// Uncomment the type of sensor in use:
+#define DHTTYPE DHT11 // DHT 11
+// #define DHTTYPE    DHT22     // DHT 22 (AM2302)
+// #define DHTTYPE    DHT21     // DHT 21 (AM2301)
 
-// Initialiser le capteur DHT
-DHT_Unified dht(CAPTEUR, DHTTYPE);
+// See guide for details on sensor wiring and usage:
+//   https://learn.adafruit.com/dht/overview
 
-// Variable pour le délai entre les lectures
+DHT_Unified dht(DHTPIN, DHTTYPE);
+
 uint32_t delayMS;
 
 void setup()
 {
-  // Initialisation de la LED
   pinMode(LED, OUTPUT);
-
-  // Initialisation de la communication série
   Serial.begin(9600);
-
-  // Initialiser le capteur DHT
+  // Initialize device.
   dht.begin();
-  Serial.println(F("DHTxx Capteur Température & Humidité"));
-
-  // Obtenir les détails du capteur
+  Serial.println(F("DHTxx Unified Sensor Example"));
+  // Print temperature sensor details.
   sensor_t sensor;
   dht.temperature().getSensor(&sensor);
-  Serial.println(F("Capteur de température initialisé"));
   Serial.println(F("------------------------------------"));
-  Serial.print(F("Type de capteur : "));
+  Serial.println(F("Temperature Sensor"));
+  Serial.print(F("Sensor Type: "));
   Serial.println(sensor.name);
-  Serial.print(F("Version du pilote : "));
+  Serial.print(F("Driver Ver:  "));
   Serial.println(sensor.version);
-  Serial.print(F("Plage de mesure : "));
-  Serial.print(sensor.min_value);
-  Serial.print(F("°C à "));
+  Serial.print(F("Unique ID:   "));
+  Serial.println(sensor.sensor_id);
+  Serial.print(F("Max Value:   "));
   Serial.print(sensor.max_value);
   Serial.println(F("°C"));
-  Serial.print(F("Résolution : "));
+  Serial.print(F("Min Value:   "));
+  Serial.print(sensor.min_value);
+  Serial.println(F("°C"));
+  Serial.print(F("Resolution:  "));
   Serial.print(sensor.resolution);
   Serial.println(F("°C"));
   Serial.println(F("------------------------------------"));
-
+  // Print humidity sensor details.
   dht.humidity().getSensor(&sensor);
-  Serial.println(F("Capteur d'humidité initialisé"));
-  Serial.println(F("------------------------------------"));
-  Serial.print(F("Type de capteur : "));
+  Serial.println(F("Humidity Sensor"));
+  Serial.print(F("Sensor Type: "));
   Serial.println(sensor.name);
-  Serial.print(F("Version du pilote : "));
+  Serial.print(F("Driver Ver:  "));
   Serial.println(sensor.version);
-  Serial.print(F("Plage de mesure : "));
-  Serial.print(sensor.min_value);
-  Serial.print(F("% à "));
+  Serial.print(F("Unique ID:   "));
+  Serial.println(sensor.sensor_id);
+  Serial.print(F("Max Value:   "));
   Serial.print(sensor.max_value);
   Serial.println(F("%"));
-  Serial.print(F("Résolution : "));
+  Serial.print(F("Min Value:   "));
+  Serial.print(sensor.min_value);
+  Serial.println(F("%"));
+  Serial.print(F("Resolution:  "));
   Serial.print(sensor.resolution);
   Serial.println(F("%"));
   Serial.println(F("------------------------------------"));
-
-  // Délai minimal entre les lectures du capteur
+  // Set delay between sensor readings based on sensor details.
   delayMS = sensor.min_delay / 1000;
 }
 
 void loop()
 {
-  // Effectuer une mesure toutes les 5 secondes
-  delay(5000);
-
-  // Lire la température
+  // Delay between measurements.
+  delay(delayMS);
+  // Get temperature event and print its value.
   sensors_event_t event;
   dht.temperature().getEvent(&event);
   if (isnan(event.temperature))
   {
-    Serial.println(F("Erreur de lecture de la température !"));
+    Serial.println(F("Error reading temperature!"));
   }
   else
   {
-    Serial.print(F("Température : "));
+    Serial.print(F("Temperature: "));
     Serial.print(event.temperature);
     Serial.println(F("°C"));
-
-    // Contrôler la LED en fonction de la température
-    if (event.temperature > 30.0)
-    {                          // Température > 30°C
-      digitalWrite(LED, HIGH); // Allumer la LED
-      Serial.println(F("LED allumée (température élevée)"));
-    }
-    else
-    {
-      digitalWrite(LED, LOW); // Éteindre la LED
-      Serial.println(F("LED éteinte (température normale)"));
-    }
   }
-
-  // Lire l'humidité
+  // Get humidity event and print its value.
   dht.humidity().getEvent(&event);
   if (isnan(event.relative_humidity))
   {
-    Serial.println(F("Erreur de lecture de l'humidité !"));
+    Serial.println(F("Error reading humidity!"));
   }
   else
   {
-    Serial.print(F("Humidité : "));
+    Serial.print(F("Humidity: "));
     Serial.print(event.relative_humidity);
     Serial.println(F("%"));
   }
