@@ -1,9 +1,19 @@
 #include <Arduino.h>
 
-void setup() {
+// Define the pins that we will use
+#define CAPTEUR 33
+#define LED 26
+
+void setup()
+{
   // put your setup code here, to run once:
+  pinMode(LED, OUTPUT);
 }
 
-void loop() {
-  // put your code here to run repeatedly
+void loop()
+{
+  digitalWrite(LED, HIGH);
+  delay(200);
+  digitalWrite(LED, LOW);
+  delay(200);
 }
